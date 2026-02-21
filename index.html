@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#C8760A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="description" content="ThèsePro — Guide de recherche pour étudiants africains">
+<title>ThèsePro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;0,700;1,500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ─────────────────────────────── */
+:root{
+  --paper:#FAF8F3;--paper2:#F2EDE3;--paper3:#E8E0D0;
+  --ink:#1A160E;--ink2:#3C3324;--ink3:#857B68;
+  --amber:#C8760A;--amber-l:#FEF0D8;--amber-m:#F0A830;
+  --green:#2A6047;--green-l:#DCF0E6;
+  --red:#B83025;--red-l:#FDECEA;
+  --blue:#1A4F7A;--blue-l:#DCEbF8;
+  --border:#D5CBBA;--sh:rgba(26,22,14,.07);
+  --safe-b:env(safe-area-inset-bottom,16px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Outfit',sans-serif;background:var(--paper);color:var(--ink);
+  min-height:100dvh;overflow-x:hidden;
+  background-image:
+    radial-gradient(circle at 20% 80%,rgba(200,118,10,.04) 0%,transparent 50%),
+    radial-gradient(circle at 80% 20%,rgba(42,96,71,.03) 0%,transparent 50%);
+}
+
+/* ── LAYOUT ─────────────────────────────── */
+.shell{display:flex;flex-direction:column;min-height:100dvh;}
+
+/* HEADER */
+.header{
+  background:var(--paper2);border-bottom:1.5px solid var(--border);
+  padding:14px 18px 12px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:300;box-shadow:0 2px 12px var(--sh);
+}
+.logo{font-family:'Lora',serif;font-size:20px;font-weight:700;color:var(--amber);letter-spacing:-.5px;}
+.logo span{color:var(--ink);}
+.hdr-r{display:flex;align-items:center;gap:10px;}
+.hdr-step{font-size:12px;color:var(--ink3);font-weight:500;}
+.menu-btn{
+  background:none;border:none;cursor:pointer;width:36px;height:36px;
+  border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:20px;color:var(--ink2);transition:background .15s;
+}
+.menu-btn:hover{background:var(--paper3);}
+
+/* PROGRESS STRIP */
+.prog-strip{
+  background:var(--paper2);border-bottom:1.5px solid var(--border);
+  padding:10px 18px;display:none;flex-direction:column;gap:6px;
+}
+.prog-strip.show{display:flex;}
+.prog-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--ink3);font-weight:500;}
+.prog-pct{color:var(--amber);font-weight:700;font-size:13px;}
+.prog-track{background:var(--paper3);border-radius:99px;height:6px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--amber),var(--amber-m),var(--green));transition:width .8s cubic-bezier(.34,1.56,.64,1);}
+.prog-dots{display:flex;gap:6px;}
+.pd{flex:1;display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3);cursor:pointer;padding:2px 0;}
+.pd-dot{width:6px;height:6px;border-radius:50%;background:var(--border);flex-shrink:0;transition:all .3s;}
+.pd.done .pd-dot{background:var(--green);}.pd.done{color:var(--green);}
+.pd.cur .pd-dot{background:var(--amber);box-shadow:0 0 0 3px rgba(200,118,10,.2);}.pd.cur{color:var(--amber);font-weight:600;}
+
+/* MAIN */
+.main{flex:1;padding:18px 18px 100px;}
+@media(min-width:640px){
+  .main{max-width:640px;margin:0 auto;padding:24px 24px 100px;}
+  .header,.prog-strip{padding-left:max(18px,calc(50% - 304px));padding-right:max(18px,calc(50% - 304px));}
+  .bottom-nav{max-width:640px;left:50%;transform:translateX(-50%);right:auto;
+    border-left:1.5px solid var(--border);border-right:1.5px solid var(--border);}
+  .toast{max-width:600px;left:50%;transform:translate(-50%,30px);}
+  .toast.show{transform:translate(-50%,0);}
+}
+
+/* BOTTOM NAV */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--paper2);border-top:1.5px solid var(--border);
+  display:flex;padding:8px 4px calc(8px + var(--safe-b));
+  box-shadow:0 -4px 20px var(--sh);z-index:300;
+}
+.bn{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  background:none;border:none;cursor:pointer;padding:6px 4px;border-radius:10px;
+  transition:all .15s;color:var(--ink3);font-family:'Outfit',sans-serif;
+}
+.bn:hover,.bn.on{background:var(--amber-l);color:var(--amber);}
+.bn-i{font-size:20px;line-height:1;}
+.bn-l{font-size:10px;font-weight:500;}
+
+/* DRAWER */
+.drw-ov{display:none;position:fixed;inset:0;background:rgba(26,22,14,.5);z-index:400;backdrop-filter:blur(2px);}
+.drw-ov.open{display:block;}
+.drw{
+  position:fixed;top:0;right:0;bottom:0;width:min(80vw,300px);
+  background:var(--paper2);border-left:1.5px solid var(--border);
+  z-index:401;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+  overflow-y:auto;display:flex;flex-direction:column;
+}
+.drw.open{transform:translateX(0);}
+.drw-head{padding:20px 18px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.drw-title{font-family:'Lora',serif;font-size:18px;font-weight:700;}
+.close-x{background:none;border:none;cursor:pointer;font-size:22px;color:var(--ink3);width:32px;height:32px;display:flex;align-items:center;justify-content:center;}
+.drw-nav{padding:12px;flex:1;}
+.drw-sec{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink3);padding:10px 10px 4px;}
+.drw-btn{
+  width:100%;background:none;border:none;display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:8px;cursor:pointer;font-family:'Outfit',sans-serif;
+  font-size:14px;color:var(--ink2);text-align:left;transition:all .15s;margin-bottom:2px;
+}
+.drw-btn:hover{background:var(--paper3);}
+.drw-btn.on{background:var(--amber-l);color:var(--amber);font-weight:600;}
+.drw-btn.done{color:var(--green);}
+.d-dot{
+  width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;flex-shrink:0;
+  border:2px solid var(--border);background:white;color:var(--ink3);
+}
+.drw-btn.on .d-dot{border-color:var(--amber);background:var(--amber);color:white;}
+.drw-btn.done .d-dot{border-color:var(--green);background:var(--green);color:white;font-size:13px;}
+
+/* ── SECTIONS ───────────────────────────── */
+.section{display:none;}
+.section.active{display:block;animation:up .25s ease;}
+@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── COMPONENTS ─────────────────────────── */
+/* CARD */
+.card{background:white;border:1.5px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:0 2px 10px var(--sh);}
+.card-hdr{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;}
+.ico{width:40px;height:40px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;background:var(--amber-l);border:1.5px solid rgba(200,118,10,.2);}
+.ico.g{background:var(--green-l);border-color:rgba(42,96,71,.2);}
+.ico.b{background:var(--blue-l);border-color:rgba(26,79,122,.2);}
+.ico.r{background:var(--red-l);border-color:rgba(184,48,37,.2);}
+.card-t{font-family:'Lora',serif;font-size:17px;font-weight:700;}
+.card-s{font-size:13px;color:var(--ink3);margin-top:3px;line-height:1.5;}
+
+/* TIP */
+.tip{background:var(--amber-l);border-left:4px solid var(--amber);border-radius:0 10px 10px 0;padding:13px 16px;font-size:14px;line-height:1.7;color:var(--ink2);margin-bottom:16px;}
+.tip strong{color:var(--amber);}
+.tip.g{background:var(--green-l);border-color:var(--green);}
+.tip.g strong{color:var(--green);}
+
+/* FORM */
+label{display:block;font-size:13px;color:var(--ink3);margin-bottom:5px;font-weight:500;}
+textarea,input[type=text],input[type=number],select{
+  width:100%;background:var(--paper);border:1.5px solid var(--border);border-radius:10px;
+  color:var(--ink);font-family:'Outfit',sans-serif;font-size:15px;
+  padding:11px 14px;outline:none;resize:vertical;transition:border-color .2s;-webkit-appearance:none;
+}
+textarea:focus,input:focus,select:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(200,118,10,.12);}
+textarea{min-height:90px;line-height:1.6;}
+.fg{margin-bottom:14px;}
+.frow{display:flex;gap:10px;}.frow>.fg{flex:1;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:13px 22px;border-radius:10px;font-family:'Outfit',sans-serif;font-size:15px;font-weight:600;cursor:pointer;border:none;transition:all .2s;width:100%;}
+.btn-a{background:var(--amber);color:white;}
+.btn-a:active{background:#A8600A;transform:scale(.99);}
+.btn-g{background:var(--green);color:white;}
+.btn-g:active{background:#1D4430;transform:scale(.99);}
+.btn-o{background:transparent;color:var(--ink2);border:1.5px solid var(--border);}
+.btn-o:hover{border-color:var(--amber);color:var(--amber);}
+.btn-ai{background:linear-gradient(135deg,#5B4FD4,#8B5CF6);color:white;}
+.btn-sm{padding:10px 16px;font-size:13px;width:auto;}
+.btn-row{display:flex;flex-direction:column;gap:8px;margin-top:4px;}
+
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:7px;}
+.chip{padding:7px 14px;border-radius:20px;font-size:13px;cursor:pointer;border:1.5px solid var(--border);color:var(--ink3);background:var(--paper);transition:all .15s;}
+.chip.on{border-color:var(--amber);color:var(--amber);background:var(--amber-l);font-weight:500;}
+
+/* CHECKLIST */
+.cl{display:flex;flex-direction:column;}
+.cli{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--paper3);font-size:14px;}
+.cli:last-child{border:none;}
+.cli input[type=checkbox]{width:18px;height:18px;min-height:unset;accent-color:var(--amber);cursor:pointer;margin-top:1px;flex-shrink:0;}
+.cli.done label{color:var(--ink3);text-decoration:line-through;}
+
+/* ITERATION THREAD */
+.it-thread{display:flex;flex-direction:column;gap:0;margin-bottom:14px;}
+.it-node{display:flex;gap:10px;align-items:stretch;}
+.it-spine{display:flex;flex-direction:column;align-items:center;}
+.it-circ{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:var(--amber);color:white;}
+.it-line{width:2px;flex:1;background:var(--border);margin:3px 0;}
+.it-bub{background:var(--paper);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;flex:1;margin-bottom:8px;}
+.it-nb{font-size:10px;color:var(--ink3);margin-bottom:2px;}
+.it-tx{font-size:14px;font-weight:500;}
+
+/* BLOCKERS */
+.blocker-list{display:flex;flex-direction:column;gap:10px;}
+.bk{border:1.5px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;background:white;box-shadow:0 1px 6px var(--sh);transition:box-shadow .2s;}
+.bk:hover{box-shadow:0 4px 16px var(--sh);}
+.bk-top{display:flex;align-items:center;gap:12px;padding:14px 16px;}
+.bk-e{font-size:22px;flex-shrink:0;}
+.bk-i{flex:1;}
+.bk-n{font-weight:600;font-size:15px;}
+.bk-s{font-size:12px;color:var(--ink3);margin-top:2px;}
+.bk-arr{font-size:18px;color:var(--ink3);transition:transform .2s;flex-shrink:0;}
+.bk.open .bk-arr{transform:rotate(180deg);}
+.bk-sol{display:none;padding:0 16px 14px;border-top:1px solid var(--paper3);padding-top:12px;}
+.bk.open .bk-sol{display:block;animation:up .2s ease;}
+.sol-box{padding:10px 12px;border-radius:8px;font-size:13px;line-height:1.7;margin-top:4px;}
+.bk.red{border-top:3px solid var(--red);}
+.bk.amb{border-top:3px solid var(--amber);}
+.bk.blu{border-top:3px solid var(--blue);}
+.bk.red .sol-box{background:var(--red-l);color:var(--red);border-left:3px solid var(--red);}
+.bk.amb .sol-box{background:var(--amber-l);color:var(--amber);border-left:3px solid var(--amber);}
+.bk.blu .sol-box{background:var(--blue-l);color:var(--blue);border-left:3px solid var(--blue);}
+
+/* DESIGN / TOOL GRID */
+.dg{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.dc{border:1.5px solid var(--border);border-radius:10px;padding:13px;cursor:pointer;transition:all .2s;background:var(--paper);text-align:center;}
+.dc:hover,.dc.on{border-color:var(--amber);background:var(--amber-l);}
+.dc-e{font-size:22px;margin-bottom:5px;}
+.dc-t{font-size:13px;font-weight:600;}
+.dc-d{font-size:11px;color:var(--ink3);margin-top:2px;}
+.tc{border:1.5px solid var(--border);border-radius:10px;padding:13px;cursor:pointer;transition:all .2s;background:var(--paper);text-align:center;}
+.tc:hover,.tc.on{border-color:var(--blue);background:var(--blue-l);}
+.tc-e{font-size:22px;margin-bottom:5px;}
+.tc-t{font-size:13px;font-weight:600;}
+.tc-d{font-size:11px;color:var(--ink3);margin-top:2px;}
+
+/* STEP HEADER */
+.step-hdr{display:flex;align-items:center;gap:10px;margin-bottom:18px;padding-bottom:14px;border-bottom:1.5px solid var(--border);}
+.step-nb{width:36px;height:36px;border-radius:10px;background:var(--amber);color:white;display:flex;align-items:center;justify-content:center;font-family:'Lora',serif;font-size:18px;font-weight:700;flex-shrink:0;}
+.step-hdr-t{font-family:'Lora',serif;font-size:20px;font-weight:700;}
+.step-hdr-s{font-size:13px;color:var(--ink3);margin-top:2px;}
+
+/* PLANNING */
+.plan{display:flex;flex-direction:column;}
+.plan-r{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--paper3);}
+.plan-r:last-child{border:none;}
+.plan-n{width:26px;height:26px;border-radius:50%;background:var(--amber);color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px;}
+.plan-t{font-weight:500;font-size:14px;}
+.plan-d{font-size:12px;color:var(--ink3);margin-top:2px;}
+
+/* RESOURCES */
+.res-r{display:flex;align-items:flex-start;gap:12px;padding:13px 0;border-bottom:1px solid var(--paper3);}
+.res-r:last-child{border:none;}
+.res-e{font-size:20px;flex-shrink:0;margin-top:1px;}
+.res-t{font-weight:500;font-size:14px;}
+.res-d{font-size:12px;color:var(--ink3);margin-top:2px;}
+.tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;margin-left:6px;vertical-align:middle;}
+.tg{background:var(--green-l);color:var(--green);}
+.tb{background:var(--blue-l);color:var(--blue);}
+
+/* SAMPLE SIZE RESULT */
+.n-res{background:var(--green-l);border:1.5px solid var(--green);border-radius:10px;padding:14px;margin-top:12px;display:none;}
+.n-num{font-family:'Lora',serif;font-size:36px;font-weight:700;color:var(--green);}
+.n-lbl{font-size:13px;color:var(--ink3);}
+.n-note{font-size:12px;color:var(--ink3);margin-top:6px;}
+
+/* ASSISTANT CHAT (pre-written) */
+.ai-chat{background:var(--paper);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;}
+.ai-head{padding:11px 14px;background:linear-gradient(135deg,rgba(91,79,212,.08),rgba(139,92,246,.06));border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px;}
+.ai-pulse{width:8px;height:8px;border-radius:50%;background:#8B5CF6;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.ai-lbl{font-size:13px;font-weight:600;color:#6D28D9;}
+.chat-msgs{padding:14px;max-height:380px;min-height:120px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;}
+.msg{display:flex;gap:9px;animation:up .25s ease;}
+.msg-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:2px;}
+.msg-ai .msg-av{background:linear-gradient(135deg,#5B4FD4,#8B5CF6);}
+.msg-u .msg-av{background:var(--paper2);border:1.5px solid var(--border);}
+.msg-bub{background:white;border:1.5px solid var(--border);border-radius:10px;padding:10px 13px;font-size:14px;line-height:1.6;max-width:82%;box-shadow:0 1px 4px var(--sh);}
+.msg-ai .msg-bub{background:rgba(91,79,212,.05);border-color:rgba(91,79,212,.18);}
+.ai-inp{padding:10px;border-top:1px solid var(--border);display:flex;gap:8px;}
+.ai-inp input{font-size:14px;padding:9px 13px;}
+.typing{display:flex;gap:4px;align-items:center;padding:4px 0;}
+.typing span{width:7px;height:7px;border-radius:50%;background:#8B5CF6;animation:bop 1.2s infinite;display:inline-block;}
+.typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+@keyframes bop{0%,80%,100%{transform:scale(.55);opacity:.4}40%{transform:scale(1);opacity:1}}
+.qchips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.qchip{padding:6px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:1.5px solid rgba(91,79,212,.3);color:#6D28D9;background:rgba(91,79,212,.05);transition:all .15s;}
+.qchip:hover,.qchip:active{background:rgba(91,79,212,.12);}
+
+/* FEEDBACK */
+.emo-row{display:flex;gap:8px;margin-top:7px;flex-wrap:wrap;}
+.emo{width:44px;height:44px;border-radius:50%;border:2px solid var(--border);background:white;font-size:22px;cursor:pointer;transition:all .15s;}
+.emo.on{border-color:var(--amber);background:var(--amber-l);transform:scale(1.1);}
+.rat-row{display:flex;gap:8px;margin-top:7px;}
+.rat{width:44px;height:44px;border-radius:50%;border:2px solid var(--border);background:white;font-family:'Lora',serif;font-size:16px;font-weight:700;cursor:pointer;transition:all .15s;color:var(--ink3);}
+.rat.on{border-color:var(--amber);background:var(--amber);color:white;}
+.bck-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:7px;}
+.bck{padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);background:white;font-size:13px;cursor:pointer;transition:all .15s;color:var(--ink2);}
+.bck.on{border-color:var(--amber);background:var(--amber-l);color:var(--amber);font-weight:500;}
+
+/* STAT ROW */
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+.stat{background:white;border:1.5px solid var(--border);border-radius:10px;padding:12px 8px;text-align:center;box-shadow:0 1px 6px var(--sh);}
+.stat-n{font-family:'Lora',serif;font-size:26px;font-weight:700;color:var(--amber);}
+.stat-l{font-size:11px;color:var(--ink3);margin-top:2px;}
+
+/* WELCOME */
+.welcome-t{font-family:'Lora',serif;font-size:26px;font-weight:700;line-height:1.25;margin-bottom:8px;}
+.welcome-t em{color:var(--amber);font-style:italic;}
+.welcome-d{font-size:14px;color:var(--ink2);line-height:1.7;margin-bottom:20px;}
+.quote{background:white;border-left:4px solid var(--amber);border-radius:0 10px 10px 0;padding:16px 18px;margin-bottom:16px;box-shadow:0 2px 8px var(--sh);}
+.quote-t{font-family:'Lora',serif;font-style:italic;font-size:15px;line-height:1.7;color:var(--ink2);}
+.quote-a{font-size:12px;color:var(--ink3);margin-top:6px;}
+.sec-intro{background:linear-gradient(135deg,var(--amber-l),rgba(200,118,10,.04));border:1.5px solid rgba(200,118,10,.2);border-radius:12px;padding:16px;margin-bottom:18px;}
+.sec-intro-t{font-family:'Lora',serif;font-size:15px;font-weight:700;color:var(--amber);margin-bottom:4px;}
+.sec-intro-d{font-size:13px;color:var(--ink2);line-height:1.6;}
+
+/* TOAST */
+.toast{position:fixed;bottom:calc(72px + var(--safe-b) + 12px);left:16px;right:16px;background:white;border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:11px;box-shadow:0 8px 28px rgba(26,22,14,.15);transform:translateY(30px);opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);z-index:500;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast-i{font-size:22px;flex-shrink:0;}
+.toast-t{font-weight:600;font-size:14px;}
+.toast-d{font-size:12px;color:var(--ink3);margin-top:1px;}
+
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"><div class="toast-i" id="ti">✅</div><div><div class="toast-t" id="tt"></div><div class="toast-d" id="td"></div></div></div>
+
+<!-- DRAWER -->
+<div class="drw-ov" id="dov" onclick="closeDrw()"></div>
+<div class="drw" id="drw">
+  <div class="drw-head"><div class="drw-title">ThèsePro</div><button class="close-x" onclick="closeDrw()">✕</button></div>
+  <div class="drw-nav">
+    <div class="drw-sec">Navigation</div>
+    <button class="drw-btn on" id="db-home" onclick="go('home');closeDrw()"><div class="d-dot">🏠</div>Accueil</button>
+    <div class="drw-sec">Parcours</div>
+    <button class="drw-btn" id="db-q" onclick="go('q');closeDrw()"><div class="d-dot" id="dd1">1</div>Question de recherche</button>
+    <button class="drw-btn" id="db-p" onclick="go('p');closeDrw()"><div class="d-dot" id="dd2">2</div>Protocole</button>
+    <button class="drw-btn" id="db-c" onclick="go('c');closeDrw()"><div class="d-dot" id="dd3">3</div>Collecte des données</button>
+    <button class="drw-btn" id="db-a" onclick="go('a');closeDrw()"><div class="d-dot" id="dd4">4</div>Analyse des données</button>
+    <div class="drw-sec">Outils</div>
+    <button class="drw-btn" id="db-peurs" onclick="go('peurs');closeDrw()"><div class="d-dot">💭</div>Gérer mes peurs</button>
+    <button class="drw-btn" id="db-ai" onclick="go('ai');closeDrw()"><div class="d-dot">🤖</div>Assistant</button>
+    <button class="drw-btn" id="db-fb" onclick="go('fb');closeDrw()"><div class="d-dot">✍️</div>Votre retour</button>
+    <button class="drw-btn" id="db-res" onclick="go('res');closeDrw()"><div class="d-dot">📚</div>Ressources</button>
+  </div>
+</div>
+
+<div class="shell">
+<header class="header">
+  <div class="logo">Thèse<span>Pro</span></div>
+  <div class="hdr-r">
+    <div class="hdr-step" id="hstep"></div>
+    <button class="menu-btn" onclick="openDrw()">☰</button>
+  </div>
+</header>
+
+<div class="prog-strip" id="pstrip">
+  <div class="prog-meta"><span id="plbl">Début du parcours</span><span class="prog-pct" id="ppct">0%</span></div>
+  <div class="prog-track"><div class="prog-fill" id="pfill" style="width:0%"></div></div>
+  <div class="prog-dots">
+    <div class="pd cur" id="pd1" onclick="go('q')"><div class="pd-dot"></div><span>Question</span></div>
+    <div class="pd" id="pd2" onclick="go('p')"><div class="pd-dot"></div><span>Protocole</span></div>
+    <div class="pd" id="pd3" onclick="go('c')"><div class="pd-dot"></div><span>Collecte</span></div>
+    <div class="pd" id="pd4" onclick="go('a')"><div class="pd-dot"></div><span>Analyse</span></div>
+  </div>
+</div>
+
+<main class="main">
+
+<!-- ══════════ ACCUEIL ══════════ -->
+<section class="section active" id="sec-home">
+  <div class="welcome-t">Votre thèse,<br><em>étape par étape.</em></div>
+  <div class="welcome-d">Chaque grand chercheur a commencé exactement là où vous êtes. Avancez une micro-étape à la fois.</div>
+  <div class="stat-row">
+    <div class="stat"><div class="stat-n" id="sh-done">0/4</div><div class="stat-l">Étapes</div></div>
+    <div class="stat"><div class="stat-n" id="sh-iter">0</div><div class="stat-l">Itérations</div></div>
+    <div class="stat"><div class="stat-n" id="sh-chk">0</div><div class="stat-l">Points ✓</div></div>
+  </div>
+  <div class="quote"><div class="quote-t" id="qt"></div><div class="quote-a" id="qa"></div></div>
+  <div style="font-family:'Lora',serif;font-size:16px;font-weight:700;margin-bottom:12px">Les 3 blocages les plus fréquents</div>
+  <div class="blocker-list">
+    <div class="bk red" onclick="togBk(this)"><div class="bk-top"><div class="bk-e">😶‍🌫️</div><div class="bk-i"><div class="bk-n">La page blanche</div><div class="bk-s">Ne pas savoir par où commencer</div></div><div class="bk-arr">▾</div></div><div class="bk-sol"><div class="sol-box"><strong>Solution :</strong> Votre seule tâche aujourd'hui — écrire votre thème en 2 phrases. L'outil vous guide ensuite, une micro-étape à la fois. Rien de plus.</div></div></div>
+    <div class="bk amb" onclick="togBk(this)"><div class="bk-top"><div class="bk-e">🧍</div><div class="bk-i"><div class="bk-n">L'isolement</div><div class="bk-s">Directeur absent ou débordé</div></div><div class="bk-arr">▾</div></div><div class="bk-sol"><div class="sol-box"><strong>Solution :</strong> L'assistant répond à vos questions 24h/24. Préparez 1 question précise par rendez-vous avec votre directeur.</div></div></div>
+    <div class="bk blu" onclick="togBk(this)"><div class="bk-top"><div class="bk-e">📉</div><div class="bk-i"><div class="bk-n">La méthodologie</div><div class="bk-s">Stats, analyses, protocoles</div></div><div class="bk-arr">▾</div></div><div class="bk-sol"><div class="sol-box"><strong>Solution :</strong> 80% des mémoires utilisent des stats simples : fréquences, moyennes, Chi². L'assistant explique chaque méthode en langage clair.</div></div></div>
+  </div>
+  <div style="margin-top:20px"><button class="btn btn-a" onclick="go('q')">Commencer mon parcours →</button></div>
+</section>
+
+<!-- ══════════ QUESTION ══════════ -->
+<section class="section" id="sec-q">
+  <div class="step-hdr"><div class="step-nb">1</div><div><div class="step-hdr-t">Question de recherche</div><div class="step-hdr-s">Processus itératif — commencez imparfait</div></div></div>
+  <div class="sec-intro"><div class="sec-intro-t">💡 C'est normal d'hésiter</div><div class="sec-intro-d">Votre question va évoluer. Ce que vous écrivez maintenant est une <em>version de travail</em>. Les grands chercheurs reformulent aussi. Commencez.</div></div>
+  <div class="card">
+    <div class="card-hdr"><div class="ico">🔍</div><div><div class="card-t">Votre thème de départ</div><div class="card-s">Quelques lignes suffisent</div></div></div>
+    <div class="fg"><label>Domaine d'étude</label>
+      <div class="chips">
+        <div class="chip" onclick="sc(this,'d')">Santé pub.</div><div class="chip" onclick="sc(this,'d')">Éducation</div>
+        <div class="chip" onclick="sc(this,'d')">Économie</div><div class="chip" onclick="sc(this,'d')">Agriculture</div>
+        <div class="chip" onclick="sc(this,'d')">Sociologie</div><div class="chip" onclick="sc(this,'d')">Environnement</div>
+        <div class="chip" onclick="sc(this,'d')">Droit</div><div class="chip" onclick="sc(this,'d')">Autre</div>
+      </div>
+    </div>
+    <div class="fg"><label>Décrivez votre idée de départ</label><textarea id="theme" placeholder="Ex : Je veux comprendre pourquoi les enfants abandonnent l'école en zone rurale…"></textarea></div>
+    <div class="fg"><label>Contexte géographique (optionnel)</label><input type="text" id="geo" placeholder="Ex : Région du Centre, Cameroun"></div>
+    <button class="btn btn-ai" onclick="affiner()">✨ Affiner ma question</button>
+  </div>
+  <div class="card" id="itcard" style="display:none">
+    <div class="card-hdr"><div class="ico">🔄</div><div><div class="card-t">Itérations</div><div class="card-s">Chaque version est un progrès réel</div></div></div>
+    <div class="it-thread" id="itthread"></div>
+    <div id="itresult" style="display:none">
+      <div class="tip" id="ittip"></div>
+      <div class="fg" style="margin-top:10px"><label>Votre question retenue (modifiez si besoin) :</label><textarea id="qret" placeholder="Ma question de recherche est…"></textarea></div>
+      <div class="btn-row">
+        <button class="btn btn-o btn-sm" onclick="reiter()">🔄 Itérer encore</button>
+        <button class="btn btn-g" onclick="valQ()">✅ Valider cette question</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="ico">📐</div><div><div class="card-t">Critères FINER</div><div class="card-s">Évaluez votre question</div></div></div>
+    <div class="cl">
+      <div class="cli"><input type="checkbox" onchange="clk(this)"><label><strong>F</strong>aisable — avec vos ressources actuelles</label></div>
+      <div class="cli"><input type="checkbox" onchange="clk(this)"><label><strong>I</strong>ntéressante — vous motive vraiment</label></div>
+      <div class="cli"><input type="checkbox" onchange="clk(this)"><label><strong>N</strong>ouvelle — apporte quelque chose</label></div>
+      <div class="cli"><input type="checkbox" onchange="clk(this)"><label><strong>É</strong>thique — respecte les participants</label></div>
+      <div class="cli"><input type="checkbox" onchange="clk(this)"><label><strong>R</strong>elevante — utile pour votre contexte</label></div>
+    </div>
+    <div style="margin-top:14px"><button class="btn btn-a" onclick="go('p')">Passer au protocole →</button></div>
+  </div>
+</section>
+
+<!-- ══════════ PROTOCOLE ══════════ -->
+<section class="section" id="sec-p">
+  <div class="step-hdr"><div class="step-nb">2</div><div><div class="step-hdr-t">Protocole de recherche</div><div class="step-hdr-s">Votre feuille de route avant le terrain</div></div></div>
+  <div class="tip"><strong>Obligatoire :</strong> le protocole est exigé avant tout terrain. Il vous protège et cadre votre travail.</div>
+  <div class="card">
+    <div class="card-hdr"><div class="ico">🗂️</div><div><div class="card-t">Type d'étude</div></div></div>
+    <div class="dg" id="dg">
+      <div class="dc" onclick="selD(this)"><div class="dc-e">📊</div><div class="dc-t">Quantitative</div><div class="dc-d">Chiffres, stats</div></div>
+      <div class="dc" onclick="selD(this)"><div class="dc-e">💬</div><div class="dc-t">Qualitative</div><div class="dc-d">Entretiens, récits</div></div>
+      <div class="dc" onclick="selD(this)"><div class="dc-e">🔀</div><div class="dc-t">Mixte</div><div class="dc-d">Les deux</div></div>
+      <div class="dc" onclick="selD(this)"><div class="dc-e">📚</div><div class="dc-t">Revue lit.</div><div class="dc-d">Études existantes</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="ico">📝</div><div><div class="card-t">Sections clés</div></div></div>
+    <div class="fg"><label>Titre provisoire</label><input type="text" id="ptit" placeholder="Facteurs associés à…"></div>
+    <div class="fg"><label>Objectif général</label><textarea id="pobj" style="min-height:75px" placeholder="Identifier les facteurs socio-économiques associés à…"></textarea></div>
+    <div class="fg"><label>Objectifs spécifiques (un par ligne)</label><textarea id="pspec" style="min-height:80px" placeholder="1. Décrire…&#10;2. Analyser…&#10;3. Évaluer…"></textarea></div>
+    <div class="frow">
+      <div class="fg"><label>Population</label><input type="text" id="ppop" placeholder="Filles 10-15 ans…"></div>
+      <div class="fg"><label>Période</label><input type="text" id="pper" placeholder="Jan–Juin 2025"></div>
+    </div>
+    <button class="btn btn-ai" onclick="genProto()">✨ Générer une ébauche</button>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="ico g">✅</div><div><div class="card-t">Checklist protocole</div><div class="card-s">Cochez au fur et à mesure</div></div></div>
+    <div class="cl" id="pcl">
+      <div class="cli"><input type="checkbox" onchange="clkP(this)"><label>Titre clair et précis</label></div>
+      <div class="cli"><input type="checkbox" onchange="clkP(this)"><label>Contexte et justification rédigés</label></div>
+      <div class="cli"><input type="checkbox" onchange="clkP(this)"><label>Objectifs SMART définis</label></div>
+      <div class="cli"><input type="checkbox" onchange="clkP(this)"><label>Méthodologie choisie et justifiée</label></div>
+      <div class="cli"><input type="checkbox" onchange="clkP(this)"><label>Population et échantillon définis</label></div>
+      <div class="cli"><input type="checkbox" onchange="clkP(this)"><label>Outils de collecte décrits</label></div>
+      <div class="cli"><input type="checkbox" onchange="clkP(this)"><label>Considérations éthiques mentionnées</label></div>
+      <div class="cli"><input type="checkbox" onchange="clkP(this)"><label>Planning et budget estimés</label></div>
+    </div>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-g" onclick="valP()">✅ Valider le protocole</button>
+      <button class="btn btn-a" onclick="go('c')">Passer à la collecte →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ COLLECTE ══════════ -->
+<section class="section" id="sec-c">
+  <div class="step-hdr"><div class="step-nb">3</div><div><div class="step-hdr-t">Collecte des données</div><div class="step-hdr-s">Planifier avant d'aller sur le terrain</div></div></div>
+  <div class="tip"><strong>Règle d'or :</strong> une donnée mal collectée ne peut jamais être corrigée. Prenez le temps de bien préparer.</div>
+  <div class="card">
+    <div class="card-hdr"><div class="ico">🛠️</div><div><div class="card-t">Outils de collecte</div><div class="card-s">Sélectionnez vos méthodes</div></div></div>
+    <div class="dg">
+      <div class="dc" onclick="this.classList.toggle('on')"><div class="dc-e">📝</div><div class="dc-t">Questionnaire</div><div class="dc-d">Structuré, grande taille</div></div>
+      <div class="dc" onclick="this.classList.toggle('on')"><div class="dc-e">🎙️</div><div class="dc-t">Entretien</div><div class="dc-d">Profondeur, récits</div></div>
+      <div class="dc" onclick="this.classList.toggle('on')"><div class="dc-e">👥</div><div class="dc-t">Focus group</div><div class="dc-d">Dynamiques collectives</div></div>
+      <div class="dc" onclick="this.classList.toggle('on')"><div class="dc-e">📱</div><div class="dc-t">KoboToolbox</div><div class="dc-d">Mobile + hors-ligne ✓</div></div>
+      <div class="dc" onclick="this.classList.toggle('on')"><div class="dc-e">📂</div><div class="dc-t">Données 2ndaires</div><div class="dc-d">Registres existants</div></div>
+      <div class="dc" onclick="this.classList.toggle('on')"><div class="dc-e">📋</div><div class="dc-t">Observation</div><div class="dc-d">Comportements in situ</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="ico">🔢</div><div><div class="card-t">Taille d'échantillon</div><div class="card-s">Formule de Cochran</div></div></div>
+    <div class="frow">
+      <div class="fg"><label>Prévalence (%)</label><input type="number" id="prev" value="50" min="1" max="99"></div>
+      <div class="fg"><label>Marge d'erreur (%)</label><input type="number" id="marg" value="5" min="1" max="20"></div>
+    </div>
+    <div class="fg"><label>Niveau de confiance</label><select id="conf"><option value="1.96">95%</option><option value="2.576">99%</option><option value="1.645">90%</option></select></div>
+    <button class="btn btn-o btn-sm" onclick="calcN()">Calculer →</button>
+    <div class="n-res" id="nres"><div class="n-num" id="nnum">—</div><div class="n-lbl">participants minimum</div><div class="n-note" id="nnote"></div></div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="ico">📅</div><div><div class="card-t">Planning terrain</div></div></div>
+    <div class="plan">
+      <div class="plan-r"><div class="plan-n">1</div><div><div class="plan-t">Conception des outils</div><div class="plan-d">Questionnaire, guide d'entretien — 1-2 semaines</div></div></div>
+      <div class="plan-r"><div class="plan-n">2</div><div><div class="plan-t">Formation des enquêteurs</div><div class="plan-d">2-3 jours de formation pratique</div></div></div>
+      <div class="plan-r"><div class="plan-n">3</div><div><div class="plan-t">Pré-test</div><div class="plan-d">5-10% de l'échantillon avant le terrain principal</div></div></div>
+      <div class="plan-r"><div class="plan-n">4</div><div><div class="plan-t">Collecte principale</div><div class="plan-d">Selon votre planning validé</div></div></div>
+      <div class="plan-r"><div class="plan-n">5</div><div><div class="plan-t">Contrôle qualité</div><div class="plan-d">Nettoyage et vérification des données</div></div></div>
+    </div>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-g" onclick="valC()">✅ Collecte planifiée</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ ANALYSE ══════════ -->
+<section class="section" id="sec-a">
+  <div class="step-hdr"><div class="step-nb">4</div><div><div class="step-hdr-t">Analyse des données</div><div class="step-hdr-s">Transformer les données en résultats</div></div></div>
+  <div class="tip"><strong>Choisir selon vos données,</strong> pas selon ce que vous connaissez déjà. Posez une question à l'assistant.</div>
+  <div class="card">
+    <div class="card-hdr"><div class="ico b">🔬</div><div><div class="card-t">Méthodes d'analyse</div></div></div>
+    <div class="dg" id="tg">
+      <div class="tc" onclick="selT(this)"><div class="tc-e">📈</div><div class="tc-t">Stats descriptives</div><div class="tc-d">Quanti · Débutant</div></div>
+      <div class="tc" onclick="selT(this)"><div class="tc-e">🔗</div><div class="tc-t">Test de Chi²</div><div class="tc-d">Quanti · Associations</div></div>
+      <div class="tc" onclick="selT(this)"><div class="tc-e">📉</div><div class="tc-t">Régression log.</div><div class="tc-d">Quanti · Risques</div></div>
+      <div class="tc" onclick="selT(this)"><div class="tc-e">💬</div><div class="tc-t">Analyse thématique</div><div class="tc-d">Quali · Entretiens</div></div>
+      <div class="tc" onclick="selT(this)"><div class="tc-e">🗣️</div><div class="tc-t">Analyse de contenu</div><div class="tc-d">Quali · Discours</div></div>
+      <div class="tc" onclick="selT(this)"><div class="tc-e">🌐</div><div class="tc-t">Triangulation</div><div class="tc-d">Mixte · Robustesse</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="ico b">💻</div><div><div class="card-t">Logiciels gratuits</div></div></div>
+    <div class="res-r"><div class="res-e">📊</div><div><div class="res-t">EpiInfo / EpiData<span class="tag tg">Gratuit</span></div><div class="res-d">Idéal santé publique · CDC</div></div></div>
+    <div class="res-r"><div class="res-e">📊</div><div><div class="res-t">R Project<span class="tag tg">Gratuit</span></div><div class="res-d">Puissant, libre, mondial</div></div></div>
+    <div class="res-r"><div class="res-e">📊</div><div><div class="res-t">SPSS / STATA<span class="tag tb">Campus</span></div><div class="res-d">Souvent disponible à l'université</div></div></div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="ico b">🤖</div><div><div class="card-t">Questions d'analyse</div></div></div>
+    <div class="qchips">
+      <div class="qchip" onclick="askAI('analyse','Comment interpréter un p-value < 0.05 ?')">p-value</div>
+      <div class="qchip" onclick="askAI('analyse','Quand utiliser un test de Chi² ?')">Chi²</div>
+      <div class="qchip" onclick="askAI('analyse','Comment coder des données qualitatives ?')">Codage quali</div>
+      <div class="qchip" onclick="askAI('analyse','Comment présenter mes résultats dans la thèse ?')">Présentation</div>
+    </div>
+    <div class="ai-chat"><div class="ai-head"><div class="ai-pulse"></div><span class="ai-lbl">Assistant Analyse</span></div><div class="chat-msgs" id="anavmsgs"></div><div class="ai-inp"><input type="text" id="ainp" placeholder="Ex: Comment calculer un odds ratio ?"><button class="btn btn-ai btn-sm" onclick="sendAI('analyse')">↑</button></div></div>
+  </div>
+  <div class="btn-row" style="margin-top:4px"><button class="btn btn-g" onclick="valA()" style="font-size:15px;padding:14px">🎉 Terminer le parcours</button></div>
+</section>
+
+<!-- ══════════ PEURS ══════════ -->
+<section class="section" id="sec-peurs">
+  <div class="card-hdr" style="margin-bottom:16px"><div class="ico r">💭</div><div><div class="card-t">Gérer mes peurs</div><div class="card-s">Chaque peur a été vécue par des milliers de thésards avant vous</div></div></div>
+  <div class="blocker-list">
+    <div class="bk red" onclick="togBk(this)"><div class="bk-top"><div class="bk-e">😶‍🌫️</div><div class="bk-i"><div class="bk-n">« Je ne sais pas par où commencer »</div><div class="bk-s">Peur n°1 — la plus universelle</div></div><div class="bk-arr">▾</div></div><div class="bk-sol"><div class="sol-box">Votre seule tâche aujourd'hui : écrire votre thème en 2 phrases. C'est tout. La thèse est écrasante vue en entier — micro-tâche par micro-tâche, elle devient faisable.</div></div></div>
+    <div class="bk amb" onclick="togBk(this)"><div class="bk-top"><div class="bk-e">🎯</div><div class="bk-i"><div class="bk-n">« Ma question n'est pas bonne »</div><div class="bk-s">Perfectionnisme paralysant</div></div><div class="bk-arr">▾</div></div><div class="bk-sol"><div class="sol-box">Il n'existe pas de question parfaite. Il existe des questions qui s'affinent. Une version imparfaite qui avance vaut infiniment mieux qu'une perfection imaginaire qui bloque.</div></div></div>
+    <div class="bk blu" onclick="togBk(this)"><div class="bk-top"><div class="bk-e">📊</div><div class="bk-i"><div class="bk-n">« Je ne comprends pas les stats »</div><div class="bk-s">Angoisse méthodologique</div></div><div class="bk-arr">▾</div></div><div class="bk-sol"><div class="sol-box">80% des mémoires utilisent des stats simples : fréquences, moyennes, Chi². L'assistant est là pour expliquer sans jugement, avec des exemples concrets de votre domaine.</div></div></div>
+    <div class="bk red" onclick="togBk(this)"><div class="bk-top"><div class="bk-e">😰</div><div class="bk-i"><div class="bk-n">« Je ne suis pas à la hauteur »</div><div class="bk-s">Syndrome de l'imposteur</div></div><div class="bk-arr">▾</div></div><div class="bk-sol"><div class="sol-box">Ce sentiment touche 70% des doctorants — y compris les meilleurs. Votre travail a de la valeur parce qu'il répond à une question réelle de votre communauté africaine.</div></div></div>
+    <div class="bk amb" onclick="togBk(this)"><div class="bk-top"><div class="bk-e">🧍</div><div class="bk-i"><div class="bk-n">« Mon directeur n'est jamais là »</div><div class="bk-s">Isolement structurel</div></div><div class="bk-arr">▾</div></div><div class="bk-sol"><div class="sol-box">Réalité fréquente en Afrique — vous n'êtes pas seul·e. Préparez 1 question courte et précise par session. Utilisez l'assistant pour vos questions quotidiennes.</div></div></div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <div class="card-hdr"><div class="ico r">🤝</div><div><div class="card-t">Parlez de votre blocage</div></div></div>
+    <div class="ai-chat"><div class="ai-head"><div class="ai-pulse"></div><span class="ai-lbl">Coach anti-blocage</span></div><div class="chat-msgs" id="peurmsgs"></div><div class="ai-inp"><input type="text" id="peurinp" placeholder="Mon blocage en ce moment…"><button class="btn btn-ai btn-sm" onclick="sendAI('peur')">↑</button></div></div>
+  </div>
+</section>
+
+<!-- ══════════ ASSISTANT ══════════ -->
+<section class="section" id="sec-ai">
+  <div class="card-hdr" style="margin-bottom:16px"><div class="ico">🤖</div><div><div class="card-t">Assistant de recherche</div><div class="card-s">Disponible 24h/24 — adapté au contexte africain</div></div></div>
+  <div class="qchips" style="margin-bottom:14px">
+    <div class="qchip" onclick="askAI('main','Quelle différence entre validité interne et externe ?')">Validité</div>
+    <div class="qchip" onclick="askAI('main','Comment éviter les biais dans mon étude ?')">Biais</div>
+    <div class="qchip" onclick="askAI('main','Comment rédiger une revue de littérature ?')">Revue lit.</div>
+    <div class="qchip" onclick="askAI('main','Comment obtenir un accord éthique en Afrique ?')">Éthique</div>
+    <div class="qchip" onclick="askAI('main','Comment préparer ma soutenance ?')">Soutenance</div>
+    <div class="qchip" onclick="askAI('main','Quelle différence entre objectif général et spécifique ?')">Objectifs</div>
+    <div class="qchip" onclick="askAI('main','Comment choisir entre étude transversale et longitudinale ?')">Transversale</div>
+    <div class="qchip" onclick="askAI('main','Comment calculer et interpréter un odds ratio ?')">Odds ratio</div>
+  </div>
+  <div class="ai-chat"><div class="ai-head"><div class="ai-pulse"></div><span class="ai-lbl">ThèsePro — Contexte africain</span></div><div class="chat-msgs" id="mainmsgs"></div><div class="ai-inp"><input type="text" id="maininp" placeholder="Votre question méthodologique…"><button class="btn btn-ai btn-sm" onclick="sendAI('main')">↑</button></div></div>
+</section>
+
+<!-- ══════════ FEEDBACK ══════════ -->
+<section class="section" id="sec-fb">
+  <div class="card-hdr" style="margin-bottom:16px"><div class="ico">✍️</div><div><div class="card-t">Votre retour</div><div class="card-s">Chaque réponse améliore l'outil pour les suivants</div></div></div>
+  <div id="fbsuccess" style="display:none" class="tip g" style="margin-bottom:16px">🙏 <strong>Merci !</strong> Votre retour nous aide à construire un outil qui correspond vraiment aux besoins des thésards africains.</div>
+  <div class="card" id="fbform">
+    <div class="fg"><label>À quelle étape êtes-vous actuellement ?</label><select id="fbetape"><option value="">Choisir…</option><option>Tout début — pas encore commencé</option><option>Question de recherche en cours</option><option>Protocole en cours</option><option>Collecte de données</option><option>Analyse en cours</option><option>Rédaction finale</option><option>J'ai soutenu</option></select></div>
+    <div class="fg"><label>Votre plus grand blocage en ce moment</label><div class="bck-row"><div class="bck" onclick="this.classList.toggle('on')">😶‍🌫️ Page blanche</div><div class="bck" onclick="this.classList.toggle('on')">🧍 Isolement</div><div class="bck" onclick="this.classList.toggle('on')">📉 Stats/méthodes</div><div class="bck" onclick="this.classList.toggle('on')">⏰ Temps</div><div class="bck" onclick="this.classList.toggle('on')">💸 Budget</div><div class="bck" onclick="this.classList.toggle('on')">🎯 Question floue</div><div class="bck" onclick="this.classList.toggle('on')">😰 Imposteur</div></div></div>
+    <div class="fg"><label>Comment vous êtes-vous senti·e en utilisant l'outil ?</label><div class="emo-row"><button class="emo" onclick="selE(this)">😰</button><button class="emo" onclick="selE(this)">😕</button><button class="emo" onclick="selE(this)">😐</button><button class="emo" onclick="selE(this)">🙂</button><button class="emo" onclick="selE(this)">😊</button><button class="emo" onclick="selE(this)">🤩</button></div></div>
+    <div class="fg"><label>L'outil vous a-t-il aidé à avancer ? (1 = pas du tout, 5 = beaucoup)</label><div class="rat-row"><button class="rat" onclick="selR(this)">1</button><button class="rat" onclick="selR(this)">2</button><button class="rat" onclick="selR(this)">3</button><button class="rat" onclick="selR(this)">4</button><button class="rat" onclick="selR(this)">5</button></div></div>
+    <div class="fg"><label>Ce qui a le plus manqué ou dérangé</label><textarea id="fbmanque" style="min-height:75px" placeholder="Soyez honnête — c'est ce qui nous aide le plus…"></textarea></div>
+    <div class="fg"><label>Un conseil pour un thésard qui commence</label><textarea id="fbconseil" style="min-height:75px" placeholder="Ex : Ne pas attendre la question parfaite…"></textarea></div>
+    <button class="btn btn-a" onclick="submitFb()" style="font-size:15px;padding:13px">Soumettre mon retour →</button>
+  </div>
+</section>
+
+<!-- ══════════ RESSOURCES ══════════ -->
+<section class="section" id="sec-res">
+  <div class="card-hdr" style="margin-bottom:16px"><div class="ico">📚</div><div><div class="card-t">Ressources gratuites</div><div class="card-s">Sélectionnées pour les chercheurs africains</div></div></div>
+  <div class="card">
+    <div class="card-hdr"><div class="ico">🌍</div><div><div class="card-t">Accès aux articles</div></div></div>
+    <div class="res-r"><div class="res-e">📖</div><div><div class="res-t">AJOL<span class="tag tg">Gratuit</span></div><div class="res-d">500+ revues africaines · ajol.info</div></div></div>
+    <div class="res-r"><div class="res-e">🔬</div><div><div class="res-t">PubMed Central<span class="tag tg">Gratuit</span></div><div class="res-d">Millions d'articles · ncbi.nlm.nih.gov/pmc</div></div></div>
+    <div class="res-r"><div class="res-e">🏥</div><div><div class="res-t">HINARI for Africa<span class="tag tg">Gratuit</span></div><div class="res-d">Pour institutions africaines · who.int/hinari</div></div></div>
+    <div class="res-r"><div class="res-e">🔍</div><div><div class="res-t">Google Scholar<span class="tag tg">Gratuit</span></div><div class="res-d">scholar.google.com</div></div></div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="ico g">🛠️</div><div><div class="card-t">Logiciels & collecte</div></div></div>
+    <div class="res-r"><div class="res-e">📋</div><div><div class="res-t">Zotero<span class="tag tg">Gratuit</span></div><div class="res-d">Références + mode hors-ligne · zotero.org</div></div></div>
+    <div class="res-r"><div class="res-e">📱</div><div><div class="res-t">KoboToolbox<span class="tag tg">Gratuit</span></div><div class="res-d">Collecte mobile hors-ligne · kobotoolbox.org</div></div></div>
+    <div class="res-r"><div class="res-e">📊</div><div><div class="res-t">EpiInfo (CDC)<span class="tag tg">Gratuit</span></div><div class="res-d">Stats santé publique</div></div></div>
+    <div class="res-r"><div class="res-e">📊</div><div><div class="res-t">R Project<span class="tag tg">Gratuit</span></div><div class="res-d">Statistiques avancées · r-project.org</div></div></div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="ico">💡</div><div><div class="card-t">Conseils pratiques</div></div></div>
+    <div style="font-size:14px;color:var(--ink2);line-height:2">
+      📱 <strong>Internet instable ?</strong> Zotero fonctionne hors-ligne. KoboToolbox aussi.<br>
+      🤝 <strong>Directeur peu dispo ?</strong> 1 question précise par rendez-vous.<br>
+      🌍 <strong>Accès aux données ?</strong> Ministères, ONG et services stats nationaux en ont souvent.<br>
+      💸 <strong>Budget limité ?</strong> Tous les logiciels listés ici sont 100% gratuits.
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="bn on" id="bn-home" onclick="go('home')"><div class="bn-i">🏠</div><div class="bn-l">Accueil</div></button>
+  <button class="bn" id="bn-parcours" onclick="go('q')"><div class="bn-i">📖</div><div class="bn-l">Parcours</div></button>
+  <button class="bn" id="bn-peurs" onclick="go('peurs')"><div class="bn-i">💭</div><div class="bn-l">Blocages</div></button>
+  <button class="bn" id="bn-ai" onclick="go('ai')"><div class="bn-i">🤖</div><div class="bn-l">Assistant</div></button>
+  <button class="bn" id="bn-plus" onclick="openDrw()"><div class="bn-i">⋯</div><div class="bn-l">Plus</div></button>
+</nav>
+</div>
+
+<script>
+/* ════════════════════════════════
+   STATE
+════════════════════════════════ */
+const S={steps:[0,0,0,0],iter:0,checks:0,itH:[],itN:0};
+
+const QUOTES=[
+  {t:'"Un voyage de mille lieues commence toujours par un premier pas."',a:'— Lao Tseu'},
+  {t:'"Ce n\'est pas parce que les choses sont difficiles qu\'on n\'ose pas. C\'est parce qu\'on n\'ose pas qu\'elles deviennent difficiles."',a:'— Sénèque'},
+  {t:'"Chaque expert a un jour été un débutant."',a:'— Helen Hayes'},
+  {t:'"Votre travail a de la valeur parce qu\'il répond à une question réelle de votre communauté."',a:'— ThèsePro'},
+  {t:'"La recherche, c\'est regarder ce que tout le monde a regardé et voir ce que personne n\'a vu."',a:'— Albert Gyorgyi'},
+];
+
+/* ════════════════════════════════
+   PRE-WRITTEN AI RESPONSES
+════════════════════════════════ */
+const AI_KB = {
+  // ── MÉTHODOLOGIE ──────────────
+  "p-value": `**Le p-value**, c'est la probabilité d'obtenir vos résultats par hasard si l'hypothèse nulle était vraie.
+
+📌 **En pratique :**
+- p < 0,05 → résultat statistiquement significatif (risque < 5% que ce soit dû au hasard)
+- p < 0,01 → très significatif
+- p > 0,05 → pas de preuve statistique — ça ne veut pas dire que l'effet n'existe pas !
+
+⚠️ **Attention :** significatif ≠ important. Un p < 0,05 avec un échantillon énorme peut ne pas être cliniquement ou socialement pertinent. Toujours interpréter avec le contexte.`,
+
+  "chi2": `**Le test de Chi²** sert à tester si deux variables catégorielles sont associées.
+
+📌 **Exemple :** Y a-t-il une association entre le sexe (Homme/Femme) et l'abandon scolaire (Oui/Non) ?
+
+✅ **Quand l'utiliser :**
+- Variables catégorielles (oui/non, homme/femme, groupe A/B/C)
+- Effectifs attendus > 5 dans chaque case (sinon → test exact de Fisher)
+- Données indépendantes
+
+📊 **Interprétation :**
+- p < 0,05 → association statistiquement significative
+- Calculez ensuite le **V de Cramér** pour mesurer la force de l'association`,
+
+  "codage": `**Le codage des données qualitatives** transforme vos entretiens en catégories analysables.
+
+📋 **Étapes pratiques :**
+1. **Lire** vos transcriptions en entier une première fois sans coder
+2. **Premier codage** : identifier des segments signifiants et leur donner un code (mot ou phrase courte)
+3. **Regrouper** les codes proches en catégories
+4. **Identifier les thèmes** : patterns qui traversent plusieurs entretiens
+5. **Saturation** : arrêter quand les nouveaux entretiens n'apportent plus de nouveaux codes
+
+🛠️ **Outils gratuits :** MAXQDA (version trial), Taguette (open source), ou simplement Excel avec couleurs.`,
+
+  "résultats": `**Structure standard de présentation des résultats dans une thèse :**
+
+1. **Commencez par décrire** votre échantillon (tableau descriptif : âge moyen, sexe, etc.)
+2. **Présentez ensuite** les résultats par objectif spécifique (un à un)
+3. **Tableaux et figures** : chaque tableau doit avoir un titre, une source, et être commenté dans le texte
+4. **Ne pas interpréter ici** : la section résultats décrit les faits, la discussion les explique
+5. **Répondre à vos hypothèses** : indiquer clairement si elles sont confirmées ou infirmées
+
+⚠️ **Erreur fréquente :** répéter dans le texte ce qui est déjà dans le tableau. Commentez seulement ce qui est important.`,
+
+  "validité": `**Validité interne vs externe — différence fondamentale :**
+
+🔒 **Validité interne** = vos résultats sont-ils vrais *dans votre étude* ?
+→ Avez-vous bien contrôlé les facteurs de confusion ? Le lien que vous trouvez est-il réel ou dû à un biais ?
+→ Menacée par : biais de sélection, biais de mesure, variables confondantes
+
+🌍 **Validité externe** = vos résultats sont-ils généralisables *au-delà* de votre échantillon ?
+→ Vos conclusions s'appliquent-elles à d'autres populations, lieux, époques ?
+→ Menacée par : échantillon non représentatif, contexte trop spécifique
+
+💡 **En pratique :** un essai randomisé a une forte validité interne mais parfois faible validité externe (patients très sélectionnés). Une grande enquête nationale a une forte validité externe mais peut avoir des biais de mesure.`,
+
+  "biais": `**Les biais principaux en recherche et comment les limiter :**
+
+😟 **Biais de sélection** : votre échantillon ne représente pas la population cible
+→ Solution : randomisation, définir clairement critères inclusion/exclusion
+
+📝 **Biais de mesure** : vos instruments mesurent mal
+→ Solution : pré-tester le questionnaire, former les enquêteurs, utiliser des outils validés
+
+💭 **Biais de mémorisation** : participants ne se souviennent pas bien (études rétrospectives)
+→ Solution : privilégier études prospectives si possible
+
+🙋 **Biais de désirabilité sociale** : répondants disent ce qu'ils pensent être attendu
+→ Solution : garantir l'anonymat, questions neutres, pas de formulations suggestives
+
+🔍 **Biais de confusion** : une 3ème variable explique l'association que vous observez
+→ Solution : analyse multivariée, stratification`,
+
+  "revue": `**Comment rédiger une revue de littérature structurée :**
+
+1. **Définir vos mots-clés** en français ET anglais (ex: "abandon scolaire" + "school dropout" + "Afrique")
+
+2. **Chercher** dans : PubMed, Google Scholar, AJOL, HINARI
+
+3. **Critères d'inclusion** : définir l'année (ex: 2010-2025), la langue, le contexte géographique
+
+4. **Organiser** la littérature par thème, pas par auteur chronologiquement
+
+5. **Structure type :**
+   - Contexte mondial du problème
+   - Situation en Afrique / dans votre région
+   - Lacunes identifiées dans la littérature
+   - Positionnement de votre étude
+
+6. **Terminer** par : "Malgré ces études, peu ont exploré [votre angle spécifique] dans [votre contexte], d'où l'intérêt de la présente étude."`,
+
+  "éthique": `**Obtenir un accord éthique en Afrique — étapes pratiques :**
+
+1. **Identifier le comité** : chaque pays a un Comité National d'Éthique pour la Recherche en Santé (CNERS ou équivalent). Pour les sciences sociales, souvent le comité de votre université.
+
+2. **Dossier type à préparer :**
+   - Protocole complet de l'étude
+   - Formulaire de consentement éclairé (dans la langue locale si nécessaire)
+   - Questionnaires / guides d'entretien
+   - CV du chercheur principal
+   - Lettre d'appui institutionnelle
+
+3. **Délais** : compter 4 à 12 semaines selon les pays
+
+4. **Principes clés :**
+   - Consentement libre et éclairé
+   - Confidentialité et anonymat
+   - Bénéfice pour la communauté
+   - Pas de coercition
+
+5. **Astuce** : Contactez tôt votre directeur — il connaît souvent la procédure locale.`,
+
+  "soutenance": `**Préparer sa soutenance — guide pratique :**
+
+📊 **Structure de la présentation (20-30 min) :**
+1. Introduction et contexte (2-3 min)
+2. Question et objectifs (2 min)
+3. Méthodologie (3-5 min)
+4. Résultats principaux (8-10 min)
+5. Discussion et limites (3-4 min)
+6. Conclusions et recommandations (2-3 min)
+
+💡 **Conseils :**
+- Préparez 25-30 slides maximum (1 min par slide)
+- Anticipez les 5 questions les plus probables du jury
+- Répétez à voix haute au moins 3 fois
+- Préparez une réponse pour "Quelles sont les limites de votre étude ?"
+- Si vous ne savez pas : "C'est une excellente question, que j'envisage d'explorer dans mes travaux futurs."`,
+
+  "objectifs": `**Objectif général vs objectifs spécifiques — différence clé :**
+
+🎯 **Objectif général** (1 seul) :
+- C'est la finalité globale de votre recherche
+- Formule : "Identifier / Analyser / Évaluer / Comprendre [QUOI] chez [QUI] dans [OÙ] en [QUAND]"
+- Exemple : "Analyser les facteurs associés à l'abandon scolaire chez les filles de 10-15 ans dans la région de Bafia, Cameroun"
+
+📋 **Objectifs spécifiques** (3-5 habituellement) :
+- Déclinent l'objectif général en actions concrètes mesurables
+- Chaque objectif = une analyse dans votre étude
+- Verbes : Décrire / Déterminer / Comparer / Mesurer / Évaluer
+- Exemples :
+  1. Décrire le profil socio-démographique des élèves abandonnant
+  2. Identifier les raisons évoquées par les familles
+  3. Mesurer l'association entre la distance école-domicile et l'abandon
+
+💡 Test SMART : Spécifique, Mesurable, Atteignable, Réaliste, Temporel`,
+
+  "transversale": `**Étude transversale vs longitudinale :**
+
+📸 **Étude transversale** (= photo à un instant T)
+- Collecte de données à un seul moment
+- Plus rapide, moins coûteuse
+- Idéale pour : prévalence, associations
+- Limite : ne peut pas établir la causalité (on ne sait pas ce qui vient avant)
+- Exemple : enquête sur la malnutrition dans un district
+
+📽️ **Étude longitudinale** (= film dans le temps)
+- Suivi des mêmes personnes sur une période
+- Plus coûteuse, plus longue, risque de perdus de vue
+- Permet d'étudier la causalité et l'évolution
+- Types : prospective (vers l'avenir) / rétrospective (dans le passé)
+- Exemple : suivre des enfants de 0 à 5 ans pour mesurer la croissance
+
+💡 **Pour la plupart des mémoires africains** : l'étude transversale est le choix pragmatique. Assumez ses limites dans la discussion.`,
+
+  "odds ratio": `**L'Odds Ratio (OR) — comment le calculer et l'interpréter :**
+
+📊 **Définition :** mesure d'association entre une exposition et une maladie/événement. Utilisé dans les études cas-témoins et la régression logistique.
+
+**Formule :**
+OR = (a×d) / (b×c)
+
+Dans un tableau 2×2 :
+|  | Exposé | Non exposé |
+|Cas| a | b |
+|Témoins| c | d |
+
+**Interprétation :**
+- OR = 1 → pas d'association
+- OR > 1 → facteur de risque (ex: OR=2,5 → les exposés ont 2,5 fois plus de chances)
+- OR < 1 → facteur protecteur
+
+**Avec intervalle de confiance (IC 95%) :**
+- Si l'IC exclut 1 → résultat significatif
+- IC 95% [1,2 – 3,8] → significatif
+- IC 95% [0,8 – 2,1] → non significatif (inclut 1)
+
+💡 Dans R : fonction glm() avec family=binomial. Dans SPSS : Régression logistique binaire.`,
+
+  // ── BLOCAGES ──────────────────
+  "default_peur": `Je vous entends. Ce que vous ressentez est normal — et même signe que vous prenez votre travail au sérieux.
+
+Voici ce que je vous propose :
+
+1. **Nommez le blocage précisément** : "Je n'avance pas" est trop vague. Dites plutôt "Je ne sais pas comment formuler mon objectif spécifique n°2."
+
+2. **Découpez en micro-tâches** : au lieu de "écrire le protocole", visez "écrire 2 phrases sur ma population cible" aujourd'hui.
+
+3. **Avancez imparfaitement** : un premier jet raté est infiniment mieux que la page blanche. On révise après.
+
+Qu'est-ce qui vous bloque exactement ? Décrivez-le en une phrase et je vous aide concrètement.`,
+
+  // ── QUESTION DE RECHERCHE ──────
+  "affiner_default": (dom, theme, n) => `**Itération ${n} — 3 questions proposées pour votre thème :**
+
+Domaine : ${dom || 'votre domaine'}
+Thème de départ : "${theme}"
+
+---
+
+**Question A :**
+Quels facteurs sont associés à [votre phénomène] dans votre contexte ?
+→ *Recommandée si vous démarrez : claire, mesurable, faisable.*
+
+**Question B :**
+Dans quelle mesure [votre intervention ou variable] influence-t-elle [votre résultat] ?
+→ *Bonne si vous avez déjà une hypothèse précise à tester.*
+
+**Question C :**
+Comment les acteurs concernés perçoivent-ils [votre phénomène] et quelles sont leurs stratégies ?
+→ *Idéale si vous optez pour une approche qualitative.*
+
+---
+
+💡 **Recommandation :** Partez de la **Question A**, personnalisez-la avec vos variables spécifiques, puis affinez encore. Copiez la meilleure ci-dessous et modifiez-la avec vos mots.`,
+
+  // ── PROTOCOLE ─────────────────
+  "proto_default": (obj, pop) => `**Ébauche de protocole pour votre étude :**
+
+---
+
+**Justification (2 phrases) :**
+Cette étude s'inscrit dans le contexte africain où [votre problème] constitue un défi majeur pour [la population/le secteur concerné]. La présente recherche vise à combler le manque de données locales sur ce sujet afin d'orienter les politiques et interventions adaptées.
+
+---
+
+**Méthodologie recommandée :**
+Étude transversale descriptive et analytique, avec collecte de données primaires par questionnaire structuré administré en face-à-face.
+
+---
+
+**3 variables clés à mesurer :**
+1. Variable dépendante : votre phénomène principal (ex: abandon scolaire, malnutrition, etc.)
+2. Variables socio-démographiques : âge, sexe, niveau d'instruction, statut économique
+3. Variables explicatives : facteurs liés à votre question de recherche
+
+---
+
+**Considérations éthiques (Afrique) :**
+- Obtenir l'accord du Comité d'Éthique national ou institutionnel
+- Consentement éclairé écrit ou oral (selon littératie des participants)
+- Formulaire en langue locale si nécessaire
+- Garantir l'anonymat dans la saisie et le traitement des données
+- Restituer les résultats à la communauté participante
+
+---
+
+*Personnalisez ce texte avec vos données spécifiques.*`,
+};
+
+/* ════════════════════════════════
+   SMART MATCHING ENGINE
+════════════════════════════════ */
+const KEYWORDS = [
+  {keys:['p-value','p value','pvalue','significatif','seuil','0.05','0,05'], resp:'p-value'},
+  {keys:['chi2','chi²','chi carré','khi','association','tableau croisé'], resp:'chi2'},
+  {keys:['coder','codage','thématique','nvivo','atlas','quali','entretien','verbatim'], resp:'codage'},
+  {keys:['résultat','présenter','tableau','figure','écrire résultat'], resp:'résultats'},
+  {keys:['validité','interne','externe','généraliser'], resp:'validité'},
+  {keys:['biais','éviter biais','sélection','mesure','confusion','confondant'], resp:'biais'},
+  {keys:['revue','littérature','état de l\'art','bibliographie','articles'], resp:'revue'},
+  {keys:['éthique','comité','accord','consentement','cners'], resp:'éthique'},
+  {keys:['soutenance','jury','présenter','défendre','préparer'], resp:'soutenance'},
+  {keys:['objectif général','objectif spécifique','smart','formuler objectif'], resp:'objectifs'},
+  {keys:['transversale','longitudinale','prospective','rétrospective','cohorte'], resp:'transversale'},
+  {keys:['odds ratio','or ','risque relatif','régression logistique','logistique'], resp:'odds ratio'},
+];
+
+function matchResponse(question, channel) {
+  const q = question.toLowerCase();
+  for (const k of KEYWORDS) {
+    if (k.keys.some(kw => q.includes(kw))) {
+      return AI_KB[k.resp] || AI_KB.default_peur;
+    }
+  }
+  if (channel === 'peur') return AI_KB.default_peur;
+
+  // Fallback générique
+  return `Bonne question ! Voici quelques éléments de réponse :
+
+Sur le sujet que vous mentionnez, l'essentiel en contexte africain est de :
+1. **Adapter la méthode à vos ressources réelles** (temps, budget, accès au terrain)
+2. **Consulter la littérature locale** (AJOL, revues nationales) avant les revues internationales
+3. **Discuter avec votre directeur** en préparant une question précise et courte
+
+Pour une réponse plus détaillée, précisez votre question — par exemple : "Comment calculer…", "Quelle différence entre…", "Comment éviter…". Je ferai de mon mieux !`;
+}
+
+/* ════════════════════════════════
+   NAVIGATION
+════════════════════════════════ */
+const STEPS=['q','p','c','a'];
+const SEC={
+  home:{id:'sec-home',bn:'bn-home'},
+  q:{id:'sec-q',bn:'bn-parcours',si:1},
+  p:{id:'sec-p',bn:'bn-parcours',si:2},
+  c:{id:'sec-c',bn:'bn-parcours',si:3},
+  a:{id:'sec-a',bn:'bn-parcours',si:4},
+  peurs:{id:'sec-peurs',bn:'bn-peurs'},
+  ai:{id:'sec-ai',bn:'bn-ai'},
+  fb:{id:'sec-fb',bn:null},
+  res:{id:'sec-res',bn:null},
+};
+
+function go(name){
+  if(!SEC[name]) return;
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById(SEC[name].id).classList.add('active');
+
+  document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.drw-btn').forEach(b=>b.classList.remove('on'));
+  if(SEC[name].bn) document.getElementById(SEC[name].bn).classList.add('on');
+  const dbid={'home':'db-home','q':'db-q','p':'db-p','c':'db-c','a':'db-a',
+               'peurs':'db-peurs','ai':'db-ai','fb':'db-fb','res':'db-res'}[name];
+  if(dbid && document.getElementById(dbid)) document.getElementById(dbid).classList.add('on');
+
+  const isParcours = STEPS.includes(name);
+  const strip = document.getElementById('pstrip');
+  strip.className = 'prog-strip' + (isParcours?' show':'');
+  document.getElementById('hstep').textContent = isParcours?`Étape ${STEPS.indexOf(name)+1} / 4`:'';
+
+  if(isParcours){
+    document.querySelectorAll('.pd').forEach((el,i)=>{
+      el.classList.remove('cur','done');
+      if(S.steps[i]>=100) el.classList.add('done');
+      else if(STEPS[i]===name) el.classList.add('cur');
+    });
+  }
+  window.scrollTo(0,0);
+}
+
+function openDrw(){document.getElementById('drw').classList.add('open');document.getElementById('dov').classList.add('open');}
+function closeDrw(){document.getElementById('drw').classList.remove('open');document.getElementById('dov').classList.remove('open');}
+
+/* ════════════════════════════════
+   PROGRESS
+════════════════════════════════ */
+function updProg(){
+  const done=S.steps.filter(p=>p>=100).length;
+  const pct=Math.round(done/4*100);
+  document.getElementById('pfill').style.width=pct+'%';
+  document.getElementById('ppct').textContent=pct+'%';
+  document.getElementById('plbl').textContent=
+    done===0?'Début du parcours':done===4?'Parcours terminé ! 🎉':`${done} étape${done>1?'s':''} validée${done>1?'s':''}`;
+  document.getElementById('sh-done').textContent=done+'/4';
+  document.getElementById('sh-iter').textContent=S.iter;
+  document.getElementById('sh-chk').textContent=S.checks;
+
+  STEPS.forEach((s,i)=>{
+    const dd=document.getElementById('dd'+(i+1));
+    const db=document.getElementById('db-'+s);
+    if(S.steps[i]>=100){if(dd){dd.textContent='✓';}if(db)db.classList.add('done');}
+  });
+
+  if(done>0&&done<QUOTES.length){
+    const q=QUOTES[done];
+    document.getElementById('qt').textContent=q.t;
+    document.getElementById('qa').textContent=q.a;
+  }
+}
+
+/* ════════════════════════════════
+   TOAST
+════════════════════════════════ */
+let tT;
+function toast(ico,title,desc){
+  document.getElementById('ti').textContent=ico;
+  document.getElementById('tt').textContent=title;
+  document.getElementById('td').textContent=desc;
+  const t=document.getElementById('toast');
+  t.classList.add('show');
+  clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('show'),4000);
+}
+
+/* ════════════════════════════════
+   QUESTION DE RECHERCHE
+════════════════════════════════ */
+function affiner(){
+  const theme=document.getElementById('theme').value.trim();
+  if(!theme){toast('⚠️','Thème vide','Décrivez d\'abord votre idée de départ.');return;}
+  const dom=document.querySelector('.chip.on[onclick*="\'d\'"]')?.textContent||'';
+
+  S.itN++;S.iter=S.itN;S.steps[0]=Math.min(80,15+S.itN*15);
+  document.getElementById('itcard').style.display='block';
+  document.getElementById('itresult').style.display='block';
+
+  const resp = AI_KB.affiner_default(dom, theme, S.itN);
+  document.getElementById('ittip').innerHTML=resp.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+
+  S.itH.push(theme);
+  let html='';
+  S.itH.forEach((q,i)=>{
+    const isLast=i===S.itH.length-1;
+    html+=`<div class="it-node"><div class="it-spine"><div class="it-circ">${i+1}</div>${!isLast?'<div class="it-line"></div>':''}</div><div class="it-bub"><div class="it-nb">Itération ${i+1}</div><div class="it-tx">${q.substring(0,90)}${q.length>90?'…':''}</div></div></div>`;
+  });
+  document.getElementById('itthread').innerHTML=html;
+  updProg();
+}
+
+function reiter(){
+  const q=document.getElementById('qret').value.trim();
+  if(q) document.getElementById('theme').value=q;
+  affiner();
+}
+
+function valQ(){
+  const q=document.getElementById('qret').value.trim();
+  if(!q){toast('⚠️','Vide','Entrez votre question retenue.');return;}
+  S.steps[0]=100;updProg();
+  toast('✅','Question validée !','Passez maintenant au protocole.');
+  setTimeout(()=>go('p'),2000);
+}
+
+function clk(el){el.closest('.cli').classList.toggle('done',el.checked);S.checks+=el.checked?1:-1;updProg();}
+
+/* ════════════════════════════════
+   PROTOCOLE
+════════════════════════════════ */
+function clkP(el){
+  el.closest('.cli').classList.toggle('done',el.checked);
+  S.checks+=el.checked?1:-1;
+  const all=[...document.querySelectorAll('#pcl input[type=checkbox]')];
+  S.steps[1]=Math.round(all.filter(c=>c.checked).length/all.length*90);
+  updProg();
+}
+function selD(el){document.querySelectorAll('#dg .dc').forEach(c=>c.classList.remove('on'));el.classList.add('on');}
+
+function genProto(){
+  const obj=document.getElementById('pobj').value.trim();
+  if(!obj){toast('⚠️','Manque','Remplissez l\'objectif général.');return;}
+  const pop=document.getElementById('ppop').value;
+  const resp=AI_KB.proto_default(obj,pop);
+  const ex=document.getElementById('proto-res');if(ex)ex.remove();
+  const d=document.createElement('div');d.id='proto-res';d.className='tip';d.style.marginTop='12px';
+  d.innerHTML='<strong>📄 Ébauche :</strong><br><br>'+resp.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+  document.querySelector('#sec-p .btn-ai').parentElement.appendChild(d);
+}
+
+function valP(){S.steps[1]=100;updProg();toast('📋','Protocole validé !','Passez à la collecte.');setTimeout(()=>go('c'),2000);}
+
+/* ════════════════════════════════
+   COLLECTE
+════════════════════════════════ */
+function calcN(){
+  const p=parseFloat(document.getElementById('prev').value)/100;
+  const e=parseFloat(document.getElementById('marg').value)/100;
+  const z=parseFloat(document.getElementById('conf').value);
+  const n=Math.ceil((z*z*p*(1-p))/(e*e));
+  document.getElementById('nnum').textContent=n;
+  document.getElementById('nnote').textContent=`Avec 10% de non-réponse → ${Math.ceil(n*1.1)} personnes à recruter`;
+  document.getElementById('nres').style.display='block';
+}
+
+function valC(){S.steps[2]=100;updProg();toast('🗂️','Collecte planifiée !','Dernière étape : l\'analyse.');setTimeout(()=>go('a'),2000);}
+
+/* ════════════════════════════════
+   ANALYSE
+════════════════════════════════ */
+function selT(el){document.querySelectorAll('#tg .tc').forEach(c=>c.classList.remove('on'));el.classList.add('on');}
+function valA(){
+  S.steps[3]=100;updProg();
+  toast('🎉','Parcours terminé !','Félicitations ! Partagez votre retour.');
+  setTimeout(()=>go('fb'),2500);
+}
+
+/* ════════════════════════════════
+   SMART AI CHAT
+════════════════════════════════ */
+const CHAT_INIT = {
+  main: '🎓',
+  analyse: '🤖',
+  peur: '💭',
+};
+
+function initChat(channel) {
+  const msgsId = {'main':'mainmsgs','analyse':'anavmsgs','peur':'peurmsgs'}[channel];
+  const cont = document.getElementById(msgsId);
+  if(!cont || cont.children.length > 0) return;
+  const greet = {
+    main: 'Bonjour ! Méthodologie, rédaction, statistiques, peurs — posez n\'importe quelle question. Je suis adapté aux réalités africaines.',
+    analyse: 'Quelle méthode d\'analyse utilisez-vous ? Je peux vous expliquer comment l\'appliquer et interpréter vos résultats.',
+    peur: 'Qu\'est-ce qui vous empêche d\'avancer en ce moment ? Décrivez votre blocage — je suis là pour vous aider.',
+  }[channel];
+  addMsg(msgsId, greet, 'ai', CHAT_INIT[channel]);
+}
+
+function sendAI(channel) {
+  const inpId = {'main':'maininp','analyse':'ainp','peur':'peurinp'}[channel];
+  const msgsId = {'main':'mainmsgs','analyse':'anavmsgs','peur':'peurmsgs'}[channel];
+  const inp = document.getElementById(inpId);
+  const msg = inp.value.trim(); if(!msg) return;
+  inp.value = '';
+  addMsg(msgsId, msg, 'user', '👤');
+  // Simulate typing
+  addTyping(msgsId);
+  setTimeout(()=>{
+    removeTyping(msgsId);
+    const resp = matchResponse(msg, channel);
+    addMsg(msgsId, resp, 'ai', CHAT_INIT[channel]);
+  }, 800 + Math.random()*600);
+}
+
+function askAI(channel, question) {
+  const secMap={'main':'ai','analyse':'a'};
+  if(secMap[channel]) go(secMap[channel]);
+  setTimeout(()=>{
+    const inpId={'main':'maininp','analyse':'ainp','peur':'peurinp'}[channel];
+    const msgsId={'main':'mainmsgs','analyse':'anavmsgs','peur':'peurmsgs'}[channel];
+    if(!document.getElementById(msgsId).children.length) initChat(channel);
+    addMsg(msgsId, question, 'user', '👤');
+    addTyping(msgsId);
+    setTimeout(()=>{
+      removeTyping(msgsId);
+      addMsg(msgsId, matchResponse(question, channel), 'ai', CHAT_INIT[channel]);
+    }, 800+Math.random()*500);
+  },200);
+}
+
+function addMsg(cid, text, type, av){
+  const c=document.getElementById(cid);
+  const d=document.createElement('div');
+  d.className='msg msg-'+(type==='ai'?'ai':'u');
+  d.innerHTML=`<div class="msg-av">${av||'🤖'}</div><div class="msg-bub">${text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div>`;
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
+function addTyping(cid){
+  const c=document.getElementById(cid);
+  const d=document.createElement('div');d.className='msg msg-ai';d.id='ty-'+cid;
+  d.innerHTML=`<div class="msg-av">🤖</div><div class="msg-bub"><div class="typing"><span></span><span></span><span></span></div></div>`;
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
+function removeTyping(cid){const e=document.getElementById('ty-'+cid);if(e)e.remove();}
+
+/* ════════════════════════════════
+   BLOCKERS
+════════════════════════════════ */
+function togBk(el){
+  el.closest('.blocker-list')?.querySelectorAll('.bk.open').forEach(b=>{if(b!==el)b.classList.remove('open');});
+  el.classList.toggle('open');
+}
+
+/* ════════════════════════════════
+   FEEDBACK
+════════════════════════════════ */
+function selE(btn){document.querySelectorAll('.emo').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}
+function selR(btn){document.querySelectorAll('.rat').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}
+function submitFb(){
+  if(!document.getElementById('fbetape').value){toast('⚠️','Manque','Indiquez votre étape actuelle.');return;}
+  document.getElementById('fbsuccess').style.display='block';
+  document.getElementById('fbform').style.display='none';
+  toast('🙏','Merci !','Votre retour a bien été pris en compte.');
+  setTimeout(()=>{
+    document.getElementById('fbsuccess').style.display='none';
+    document.getElementById('fbform').style.display='block';
+    document.getElementById('fbetape').value='';
+    document.getElementById('fbmanque').value='';
+    document.getElementById('fbconseil').value='';
+    document.querySelectorAll('.emo,.rat,.bck').forEach(b=>b.classList.remove('on'));
+  },8000);
+}
+
+/* ════════════════════════════════
+   CHIPS
+════════════════════════════════ */
+function sc(el,g){
+  document.querySelectorAll(`[onclick="sc(this,'${g}')"]`).forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+}
+
+/* ════════════════════════════════
+   ENTER KEY
+════════════════════════════════ */
+['maininp','ainp','peurinp'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el){
+    const ch={'maininp':'main','ainp':'analyse','peurinp':'peur'}[id];
+    el.addEventListener('keydown',e=>{if(e.key==='Enter')sendAI(ch);});
+  }
+});
+
+/* ════════════════════════════════
+   INIT
+════════════════════════════════ */
+const rq=QUOTES[Math.floor(Math.random()*QUOTES.length)];
+document.getElementById('qt').textContent=rq.t;
+document.getElementById('qa').textContent=rq.a;
+
+// Init all chats
+['main','analyse','peur'].forEach(initChat);
+updProg();
+</script>
+</body>
+</html>
